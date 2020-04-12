@@ -1,0 +1,44 @@
+## Replicas number for each component
+replicas: 1
+
+# Labels
+project: cinema
+component: bookings
+
+image:
+  repository: prueba/bookings
+  tag: latest
+  pullPolicy: Always
+  pullSecret:
+    enabled: false
+    registry: cursok8s.azurecr.io
+    username:
+    password:
+
+ingress:
+  hosts:
+    - "*"
+
+container:
+  host: 0.0.0.0
+
+database:
+  mongodb: curso-cosmos.documents.azure.com
+
+environmentVariables:
+  MONGODB_HOST: curso-cosmos.documents.azure.com:10255
+  MONGODB_DATABASE: bookings
+  MONGODB_USER:
+  MONGODB_PWD:
+
+
+resources: {}
+  #  requests:
+  #    memory: 20Mi
+  #    cpu: 100m
+  #  limits:
+  #    memory: 700Mi
+
+# Service port
+service:
+  port: 8080

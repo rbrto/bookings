@@ -1,0 +1,7 @@
+{
+  "Server"      : "127.0.0.1:8080",
+  "MongoDBHost" : "curso-cosmos.documents.azure.com:10255",
+  "MongoDBUser"	: "curso-cosmos",
+  "MongoDBPwd"	: "LcR7ZookiRkEYccgHk2xRdAsk90s6Xy2g5ZKB7VbkMpB0IdoBQB8G2UVL4TGiyYWkOiXIGqTw02NwdH40ePlMQ==",
+  "Database"    : "bookings"
+}

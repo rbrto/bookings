@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ template "bookings.fullname" . }}-mongo
+  labels:
+    app: {{ template "bookings.name" . }}
+    project: {{ .Values.project }}
+    component: {{ .Values.component }}
+    release: {{ .Release.Name }}
+spec:
+  hosts:
+  - {{ .Values.database.mongodb }}
+  ports:
+  - number: 10255
+    name: tcp
+    protocol: tcp
+  resolution: DNS
+  location: MESH_EXTERNAL

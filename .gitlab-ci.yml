@@ -1,0 +1,60 @@
+variables:
+  PASSWORD: ${PASSWORD}
+  TENANT_ID: ${TENANT_ID}
+  CLIENT_ID: ${CLIENT_ID}
+  ACR_ID: ${ACR_ID}
+  ACR_USERNAME: ${ACR_USERNAME}
+  ACR_PASSWORD: ${ACR_PASSWORD}
+  CI_PROJECT_NAME: "bookings"
+  PROJECT_NAME: "prueba"
+  HELM_PATH: "chart"
+ 
+stages:
+  - build
+  - deploy
+
+##############################
+# environment: test
+##############################
+build:
+  stage: build
+  image: docker:18-git
+  environment:
+    name: test
+  services:
+    - docker:18-dind  
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    # DOCKER_HOST: tcp://localhost:2375
+    REPOSITORY_NAME: "${ACR_ID}/${PROJECT_NAME}/${CI_PROJECT_NAME}"
+  before_script:
+    - docker login $ACR_ID -u $ACR_USERNAME -p "$ACR_PASSWORD"
+  script:
+    - docker build -t $REPOSITORY_NAME:${CI_COMMIT_SHA:0:8} .
+    - docker push $REPOSITORY_NAME
+  only:
+    - test
+
+deploy:test:
+  stage: deploy
+  image: rbrto/azure-helm:latest
+  environment:
+    name: test
+  variables:
+    HELM_RELEASE_NAME: ${CI_PROJECT_NAME}
+    HELM_OPTS: --set-string image.pullSecret.enabled=true
+      --set-string image.pullSecret.username=${ACR_USERNAME}
+      --set-string image.pullSecret.password=${ACR_PASSWORD}
+      --set-string environmentVariables.MONGODB_USER=${MONGODB_USER}
+      --set-string environmentVariables.MONGODB_PWD=${MONGODB_PWD}
+      --values ${HELM_PATH}/values.yaml
+  before_script:
+    - az login --service-principal --username $CLIENT_ID --password $PASSWORD --tenant $TENANT_ID --output none
+    - az aks get-credentials --resource-group curso-k8s --name cluster-k8s --overwrite-existing
+    - helm init --client-only  
+  script:
+    - helm upgrade --install --wait --namespace default
+      --set-string image.tag=${CI_COMMIT_SHA:0:8}
+      ${HELM_OPTS} ${HELM_RELEASE_NAME} ${HELM_PATH}
+  only:
+    - test

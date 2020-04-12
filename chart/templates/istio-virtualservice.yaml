@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ template "bookings.fullname" . }}
+  labels:
+    app: {{ template "bookings.name" . }}
+    project: {{ .Values.project }}
+    component: {{ .Values.component }}
+    release: {{ .Release.Name }}
+spec:
+  hosts:
+  {{- toYaml .Values.ingress.hosts | nindent 2 }}
+  gateways:
+    - cursok8s-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/{{ template "bookings.name" . }}"
+    route:
+    - destination:
+        host: {{ template "bookings.fullname" . }}
+        port:
+          number: {{ .Values.service.port }}
